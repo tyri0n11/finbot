@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / compiled files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# Editor-specific files
+.vscode/
+.idea/
+
+# Sensitive information / environment variables
+.env
+.flaskenv
+
+# Database files
+*.sqlite3
+*.db
+
+# Log files
+*.log
+logs/
+
+# Test-related files
+.pytest_cache/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Jupyter Notebook files (if used)
+.ipynb_checkpoints/
+
+# Docker-related files (if not part of the main project)
+# .dockerignore # if you want to ignore this too
+# Dockerfile.local
+# docker-compose.local.yml

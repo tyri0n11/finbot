@@ -1,0 +1,49 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse-server
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    environment:
+      - CLICKHOUSE_DB=${WEATHER_DB}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    networks:
+      - weathernetwork
+
+  backend_service:
+    container_name: backend_service.weather
+    build:
+      context: .
+      dockerfile: Docker/Dockerfile-backend.Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    environment:
+      PYTHONPATH: /app
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_PORT: 8123
+      CLICKHOUSE_DB: ${WEATHER_DB}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      WEATHERAPI_KEY: ${WEATHER_API_KEY}
+      ENVIRONMENT: develop
+    depends_on:
+      - clickhouse
+    networks:
+      - weathernetwork
+
+
+networks:
+  weathernetwork:
+    driver: bridge
+
+volumes:
+  clickhouse_data:

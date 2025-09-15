@@ -1,0 +1,9 @@
+pydantic>=2.7.0,<3.0.0
+fastapi
+uvicorn
+clickhouse-connect
+httpx
+schedule
+httpx
+python-dotenv
+requests
