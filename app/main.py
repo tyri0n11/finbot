@@ -1,12 +1,21 @@
 from typing import Union
-
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from routers import weather, automation, n8n
 
 app = FastAPI(
     title="Weather API",
     description="A comprehensive weather data API using ClickHouse with automation support",
     version="1.0.0"
+)
+
+# Add CORS middleware for API Gateway integration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure this based on your API Gateway domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include all routers

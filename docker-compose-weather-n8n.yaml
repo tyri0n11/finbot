@@ -1,7 +1,8 @@
 services:
+  # Weather Backend Services
   clickhouse:
     image: clickhouse/clickhouse-server:latest
-    container_name: clickhouse-server
+    container_name: weather-clickhouse
     ports:
       - "8123:8123"
       - "9000:9000"
@@ -13,14 +14,14 @@ services:
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
     networks:
-      - weathernetwork
+      - weather-n8n-network
 
   weather-backend:
     container_name: weather-backend
     build:
       context: .
       dockerfile: Docker/Dockerfile-backend.Dockerfile
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-level info
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
     ports:
       - "8000:8000"
     volumes:
@@ -35,15 +36,37 @@ services:
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
       WEATHERAPI_KEY: ${WEATHER_API_KEY}
       ENVIRONMENT: production
-      CORS_ORIGINS: "*"
     depends_on:
       - clickhouse
     networks:
-      - weathernetwork
+      - weather-n8n-network
+
+  # N8N for Weather Automation
+  n8n-weather:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n-weather
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-changeme}
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - weather-backend
+    networks:
+      - weather-n8n-network
 
 networks:
-  weathernetwork:
+  weather-n8n-network:
     driver: bridge
 
 volumes:
   clickhouse_data:
+  n8n_data:

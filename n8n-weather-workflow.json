@@ -1,0 +1,123 @@
+{
+  "name": "Weather Data Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 6,
+              "minute": 0
+            },
+            {
+              "hour": 12,
+              "minute": 0
+            },
+            {
+              "hour": 18,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://your-weather-api.domain.com/api/v1/weather/automation/crawl",
+        "options": {
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "location",
+              "value": "Ho Chi Minh City"
+            }
+          ]
+        }
+      },
+      "name": "Crawl HCMC Weather",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [450, 200]
+    },
+    {
+      "parameters": {
+        "url": "http://your-weather-api.domain.com/api/v1/weather/automation/crawl",
+        "options": {
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "location",
+              "value": "Hanoi"
+            }
+          ]
+        }
+      },
+      "name": "Crawl Hanoi Weather",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "chatId": "@your_telegram_channel",
+        "text": "🌤️ Weather Update:\n\nHCMC: {{$node[\"Crawl HCMC Weather\"].json[\"message\"]}}\nHanoi: {{$node[\"Crawl Hanoi Weather\"].json[\"message\"]}}\n\nRecords updated: {{$node[\"Crawl HCMC Weather\"].json[\"records_created\"]}} + {{$node[\"Crawl Hanoi Weather\"].json[\"records_created\"]}}"
+      },
+      "name": "Send Telegram Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Crawl HCMC Weather",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Crawl Hanoi Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crawl HCMC Weather": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crawl Hanoi Weather": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
