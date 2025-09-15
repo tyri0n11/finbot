@@ -114,6 +114,10 @@ class SimpleWeatherAPIService:
             
         except Exception as e:
             print(f"Crawl error: {e}")
+            print(f"Exception type: {type(e)}")
+            print(f"Exception details: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return CrawlResponse(
                 success=False,
                 message=f"Error crawling weather data: {str(e)}",

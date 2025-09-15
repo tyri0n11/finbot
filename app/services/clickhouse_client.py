@@ -55,9 +55,24 @@ class ClickHouseClient:
                 raise Exception("Cannot connect to ClickHouse")
         
         try:
-            self.client.insert(table, data)
+            # Convert list of dicts to format expected by ClickHouse
+            if data and isinstance(data[0], dict):
+                # Convert to column format
+                columns = list(data[0].keys())
+                rows = []
+                for row in data:
+                    rows.append([row[col] for col in columns])
+                self.client.insert(table, rows, column_names=columns)
+            else:
+                self.client.insert(table, data)
         except Exception as e:
             print(f"Insert failed: {e}")
+            print(f"Table: {table}")
+            print(f"Data: {data}")
+            print(f"Data type: {type(data)}")
+            if data:
+                print(f"First row: {data[0]}")
+                print(f"First row type: {type(data[0])}")
             raise
 
 
