@@ -6,8 +6,7 @@ client = clickhouse_connect.get_client(
     port=settings.CLICKHOUSE_PORT,
     username=settings.CLICKHOUSE_USER,
     password=settings.CLICKHOUSE_PASSWORD,
-    # database=settings.DB
-    database='test'
+    database=settings.DB
 )
 
 def get_db():
