@@ -8,3 +8,5 @@ httpx
 python-dotenv
 requests
 numpy
+cython
+pydantic_settings

@@ -8,7 +8,7 @@ services:
     volumes:
       - clickhouse_data:/var/lib/clickhouse
     environment:
-      - CLICKHOUSE_DB=${WEATHER_DB}
+      - CLICKHOUSE_DB=${DB}
       - CLICKHOUSE_USER=${CLICKHOUSE_USER}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
@@ -28,13 +28,12 @@ services:
     working_dir: /app
     environment:
       PYTHONPATH: /app
-      CLICKHOUSE_HOST: clickhouse
-      CLICKHOUSE_PORT: 8123
-      CLICKHOUSE_DB: ${WEATHER_DB}
+      CLICKHOUSE_HOST: ${CLICKHOUSE_HOST}
+      CLICKHOUSE_PORT: ${CLICKHOUSE_PORT}
+      CLICKHOUSE_DB: ${DB}
       CLICKHOUSE_USER: ${CLICKHOUSE_USER}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
       WEATHERAPI_KEY: ${WEATHER_API_KEY}
-      ENVIRONMENT: ${ENVIRONMENT}
       CORS_ORIGINS: "*"
     depends_on:
       - clickhouse
