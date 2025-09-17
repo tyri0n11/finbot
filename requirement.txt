@@ -7,3 +7,4 @@ schedule
 httpx
 python-dotenv
 requests
+numpy
