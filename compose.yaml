@@ -33,8 +33,12 @@ services:
       CLICKHOUSE_DB: ${DB}
       CLICKHOUSE_USER: ${CLICKHOUSE_USER}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
-      WEATHERAPI_KEY: ${WEATHER_API_KEY}
+      WEATHER_API_KEY: ${WEATHER_API_KEY}
+      CRAWL_BASE_URL: ${CRAWL_BASE_URL}
+      PROJECT_NAME: ${PROJECT_NAME}
       CORS_ORIGINS: "*"
+    env_file:
+      - .env
     depends_on:
       - clickhouse
     networks:

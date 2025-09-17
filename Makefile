@@ -2,8 +2,7 @@ FORMAT = black . --exclude '(storage|migrations)'
 
 # Default compose file (basic setup)
 COMPOSE_FILE := compose.yaml
-# Traefik compose file (with API Gateway)
-TRAEFIK_COMPOSE_FILE := docker-compose-traefik.yaml
+
 
 # ===========================================
 # Basic Commands (using default compose)

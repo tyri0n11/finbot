@@ -4,13 +4,13 @@ from core.settings import Settings
 import logging
 
 
-key = Settings().key
-base_url = Settings().crawl_base_url
+key = Settings().WEATHER_API_KEY
+base_url = Settings().CRAWL_BASE_URL
 lang = "vi"
 logger = logging.getLogger(__name__)
 
 def get_current_by_location(location: str):
-    url = f"{base_url}/current.json"
+    url = f"{base_url}current.json"
     
     params = {
         "q": location,
