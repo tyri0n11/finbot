@@ -1,7 +1,7 @@
 from typing import Union
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import weather, automation, n8n
+from api import weather, automation, n8n
 
 app = FastAPI(
     title="Weather API",
