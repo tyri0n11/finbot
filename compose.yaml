@@ -41,6 +41,27 @@ services:
     networks:
       - weathernetwork
 
+  n8n-weather:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n-weather
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-changeme}
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - weather-backend
+    networks:
+      - weather-n8n-network
+      
 networks:
   weathernetwork:
     driver: bridge
