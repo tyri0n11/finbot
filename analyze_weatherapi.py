@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Script để analyze response thực tế từ WeatherAPI.com
-"""
-
 import requests
 import json
 import os
