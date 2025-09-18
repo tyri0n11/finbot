@@ -8,23 +8,17 @@ class CrawlSettings(BaseSettings):
 
 class ClickHouseSettings(BaseSettings):
     CLICKHOUSE_HOST: str = "localhost"
-    CLICKHOUSE_PORT: int = 8123
+    CLICKHOUSE_PORT: str = "8123"
     CLICKHOUSE_USER: str = "default"
     CLICKHOUSE_PASSWORD: str = ""
-    CLICKHOUSE_DB: str = "default"
+    DB: str = "default"
 
 
 class ProjectSettings(BaseSettings):
     PROJECT_NAME: str = "FAST API"
-    DB: str = "weather"
 
 
 class Settings(ProjectSettings, ClickHouseSettings, CrawlSettings):
-    """App global settings, auto load from env or .env if available"""
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-
+    pass
 
 settings = Settings()
