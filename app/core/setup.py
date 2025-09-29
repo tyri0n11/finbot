@@ -1,9 +1,9 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from core.settings import ClickHouseSettings, CrawlSettings, ProjectSettings, Settings
+from core.settings import ClickHouseSettings, ProjectSettings, Settings
 from typing import Set, Union
 
-SettingType = Union[ProjectSettings, ClickHouseSettings, CrawlSettings, Settings]
+SettingType = Union[ProjectSettings, ClickHouseSettings, Settings]
 
 def create_application(router: APIRouter, settings: SettingType) -> FastAPI:
     """

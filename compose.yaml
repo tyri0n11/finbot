@@ -20,9 +20,9 @@ services:
     build:
       context: .
       dockerfile: Docker/Dockerfile-backend.Dockerfile
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level info
+    command: uvicorn main:app --host 0.0.0.0 --port ${PORT} --reload --log-level info
     ports:
-      - "8000:8000"
+      - "${PORT}:${PORT}"
     volumes:
       - ./app:/app
     working_dir: /app
@@ -41,7 +41,22 @@ services:
       - clickhouse
     networks:
       - finbot_network
-      
+
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    platform: linux/arm64
+    command: ["http", "finbot-backend:${PORT}"]
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    depends_on:
+      - finbot-backend
+    networks:
+      - finbot_network
+    ports:
+      - "4040:4040"
+
+
 networks:
   finbot_network:
     driver: bridge

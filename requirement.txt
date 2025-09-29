@@ -10,3 +10,4 @@ requests
 numpy
 cython
 pydantic_settings
+aiogram
