@@ -1,9 +1,11 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from core.settings import ClickHouseSettings, ProjectSettings, Settings
+from core.settings import ClickHouseSettings, ProjectSettings, Settings, TelegramBotSettings, WebHookSettings
 from typing import Set, Union
+import asyncio
+from core.webhook import WebhookManager
 
-SettingType = Union[ProjectSettings, ClickHouseSettings, Settings]
+SettingType = Union[ProjectSettings, ClickHouseSettings, Settings, TelegramBotSettings, WebHookSettings]
 
 def create_application(router: APIRouter, settings: SettingType) -> FastAPI:
     """
@@ -22,5 +24,25 @@ def create_application(router: APIRouter, settings: SettingType) -> FastAPI:
     )
 
     app.include_router(router)
+
+    # set up webhook manager to run in background
+    manager = WebhookManager()
+    monitor_task: asyncio.Task | None = None
+
+    @app.on_event("startup")
+    async def _start_webhook_monitor() -> None:
+        nonlocal monitor_task
+        # run monitor_webhook as a background task
+        monitor_task = asyncio.create_task(manager.monitor_webhook())
+
+    @app.on_event("shutdown")
+    async def _stop_webhook_monitor() -> None:
+        nonlocal monitor_task
+        if monitor_task and not monitor_task.done():
+            monitor_task.cancel()
+            try:
+                await monitor_task
+            except asyncio.CancelledError:
+                pass
 
     return app
