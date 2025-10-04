@@ -14,8 +14,11 @@ class TelegramBotSettings(BaseSettings):
 class ProjectSettings(BaseSettings):
     PROJECT_NAME: str = "FAST API"
 
+class WebHookSettings(BaseSettings):
+    NGROK_API: str = "http://ngrok:XXXX/api/tunnels"
+    
 
-class Settings(ProjectSettings, ClickHouseSettings, TelegramBotSettings):
+class Settings(ProjectSettings, ClickHouseSettings, TelegramBotSettings, WebHookSettings):
     pass
 
 settings = Settings()
