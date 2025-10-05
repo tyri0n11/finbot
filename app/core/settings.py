@@ -3,14 +3,14 @@ from pydantic_settings import BaseSettings
 
 class ClickHouseSettings(BaseSettings):
     CLICKHOUSE_HOST: str = "clickhouse"
-    CLICKHOUSE_PORT: str = "XXXX"
+    CLICKHOUSE_PORT: str = "9000"
     CLICKHOUSE_USER: str = "clickhouse_user"
     CLICKHOUSE_PASSWORD: str = "clickhouse_password"
     CLICKHOUSE_DB: str = "clickhouse_db"
 
 class PostgreSQLSettings(BaseSettings):
     POSTGRES_HOST: str = "postgres"
-    POSTGRES_PORT: str = "XXXX"
+    POSTGRES_PORT: str = "5432"
     POSTGRES_USER: str = "postgres_user"
     POSTGRES_PASSWORD: str = "postgres_password"
     POSTGRES_DB: str = "postgres_db"

@@ -17,7 +17,7 @@ class Database:
             port=int(settings.CLICKHOUSE_PORT) if settings.CLICKHOUSE_PORT is not None else None,
             username=settings.CLICKHOUSE_USER,
             password=settings.CLICKHOUSE_PASSWORD,
-            database=settings.DB
+            database=settings.CLICKHOUSE_DB
         )
         
         # Initialize PostgreSQL connection pool
@@ -36,6 +36,7 @@ class Database:
         except psycopg2.Error as e:
             self.logger.error(f"[{TAG}] Failed to create PostgreSQL connection pool: {e}")
             self.postgres_pool = None
+            raise
     
     def get_clickhouse_session(self):
         """Get ClickHouse client session"""
