@@ -1,188 +1,133 @@
-# FinBot Backend 🤖💰
-
-A sophisticated **Financial Management Bot Backend** built with modern Python technologies, designed to help users track their personal finances through a Telegram bot interface.
-
-## 🚀 Project Overview
-
-FinBot is a comprehensive financial management system that provides users with an intelligent way to track expenses, income, and loans through a conversational Telegram bot interface. The backend is architected using modern software engineering principles, featuring clean architecture, type safety, and containerized deployment.
-
-## 🛠️ Tech Stack & Technical Skills Demonstrated
-
-### **Core Backend Technologies**
-- **FastAPI** - Modern, high-performance web framework for building APIs
-- **Pydantic V2** - Advanced data validation and serialization with type safety
-- **Uvicorn** - Lightning-fast ASGI server
-
-### **Database & Data Management**
-- **ClickHouse** - High-performance columnar database for analytics workloads
-- **Pydantic Settings** - Configuration management with environment variable support
-
-### **Bot Development**
-- **Aiogram** - Asynchronous Telegram Bot API framework
-- **Webhook Architecture** - Real-time message processing
-- **ngrok Integration** - Development environment tunneling
-
-### **DevOps & Infrastructure**
-- **Docker & Docker Compose** - Containerization and orchestration
-- **Multi-stage Dockerfile** - Optimized container builds
-- **Makefile** - Automated development workflows
-- **Environment Configuration** - Structured settings management
-
-### **Software Engineering Practices**
-- **Clean Architecture** - Separation of concerns with layered structure
-- **Dependency Injection** - Modular and testable code design
-- **Type Safety** - Comprehensive type hints throughout the codebase
-- **Validation Layer** - Business logic validation with Pydantic validators
-- **Factory Pattern** - Application factory for flexible configuration
-
-## 📁 Project Architecture
-
-```
-finbot-be/
-├── app/                    # Application core
-│   ├── api/               # API layer
-│   │   └── v1/           # API versioning
-│   ├── core/             # Core configurations
-│   │   ├── database.py   # Database connections
-│   │   ├── settings.py   # Environment settings
-│   │   └── setup.py      # Application factory
-│   ├── model/            # Data models
-│   │   └── transaction.py # Transaction entities
-│   ├── repo/             # Repository pattern
-│   └── services/         # Business logic layer
-├── Docker/               # Container configurations
-├── scripts/              # Automation scripts
-└── compose.yaml          # Docker orchestration
-```
-
-## 🔧 Key Features & Technical Implementations
-
-### **1. Advanced Data Modeling**
-```python
-# Sophisticated transaction model with enum validation
-class Transaction(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
-    type: TransactionType
-    amount: float
-    category: Optional[str] = None
-    
-    @validator("category", always=True)
-    def validate_category(cls, v, values):
-        # Dynamic validation based on transaction type
-```
-
-### **2. Type-Safe Configuration Management**
-```python
-class Settings(ProjectSettings, ClickHouseSettings, TelegramBotSettings):
-    # Multiple inheritance for modular configuration
-    pass
-```
-
-### **3. Application Factory Pattern**
-```python
-def create_application(router: APIRouter, settings: SettingType) -> FastAPI:
-    # Flexible app creation with dependency injection
-```
-
-### **4. Financial Transaction Categories**
-- **Expense Categories**: Food, Transport, Entertainment, Utilities, Health, Education
-- **Income Categories**: Salary, Investment, Bonus
-- **Loan Categories**: Pay Debt, Borrow, Lend
-
-## 🐳 Containerized Development Environment
-
-### **Docker Compose Setup**
-- **ClickHouse Database** with persistent storage
-- **Backend Service** with hot-reload development
-- **Network Isolation** for security
-- **Environment Variable Management**
-
-### **Development Workflow**
-```bash
-make up       # Start all services
-make down     # Stop all services
-make restart  # Restart with rebuild
-make logs     # View service logs
-```
-
-## 🔐 Configuration Management
-
-**Environment-based Settings**:
-- ClickHouse connection parameters
-- Telegram Bot API tokens
-- Project metadata
-- Development/Production modes
-
-## 📊 Database Design
-
-**ClickHouse Integration**:
-- High-performance analytics database
-- Optimized for financial transaction queries
-- Scalable data storage for user analytics
-
-## 🤖 Telegram Bot Integration
-
-**Webhook Architecture**:
-- Real-time message processing
-- Automated webhook configuration
-- ngrok development tunneling
-- Secure API token management
-
-## 🚀 Development Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd finbot-be
-   ```
-
-2. **Environment Configuration**
-   ```bash
-   cp .env.example .env
-   # Configure your environment variables
-   ```
-
-3. **Start Development Environment**
-   ```bash
-   make up
-   ```
-
-4. **Access Services**
-   - API: `http://localhost:8000`
-   - ClickHouse: `http://localhost:8123`
-
-## 🧪 Code Quality & Standards
-
-- **Type Safety**: Comprehensive type hints throughout
-- **Validation**: Business logic validation with Pydantic
-- **Error Handling**: Structured exception management
-- **Code Formatting**: Black formatter integration
-- **Modular Design**: Clean separation of concerns
-
-## 📈 Technical Highlights for CV
-
-This project demonstrates proficiency in:
-
-✅ **Modern Python Development** - FastAPI, Pydantic V2, Python 3.12
-✅ **Database Technologies** - ClickHouse, SQL, Data Modeling
-✅ **API Development** - RESTful APIs, OpenAPI/Swagger, Async Programming
-✅ **Bot Development** - Telegram Bot API, Webhook Architecture
-✅ **DevOps & Containerization** - Docker, Docker Compose, Container Orchestration
-✅ **Software Architecture** - Clean Architecture, Dependency Injection, Factory Pattern
-✅ **Configuration Management** - Environment Variables, Settings Management
-✅ **Development Workflows** - Makefile Automation, Development Environment Setup
-✅ **Financial Domain Knowledge** - Transaction Management, Financial Categorization
-
-## 🎯 Future Enhancements
-
-- [ ] Comprehensive test suite with pytest
-- [ ] CI/CD pipeline with GitHub Actions
-- [ ] API documentation with Swagger UI
-- [ ] Database migrations system
-- [ ] Monitoring and logging integration
-- [ ] API rate limiting and security features
+Mình sẽ viết lại README theo hướng **gọn gàng, súc tích, chuyên nghiệp**, nhấn mạnh điểm mạnh của bạn để khi đọc vào là thấy ngay bạn có **backend skill + data skill + AI/LLM integration**.
 
 ---
 
-**Built with ❤️ and modern Python technologies**
+# AI-powered Expense Management System with Hybrid OLTP/OLAP Architecture
+
+A modern **Financial Management Bot Backend** that helps users track expenses, income, and loans through a conversational **Telegram bot**.
+The system combines **OLTP (PostgreSQL)** for reliable transactions, **OLAP (ClickHouse)** for analytics, and **self-hosted LLM (Ollama)** for intelligent NLP-based task parsing.
+
+---
+
+## 🚀 Project Overview
+
+FinBot is built as a **clean, modular backend system** showcasing real-world engineering practices:
+
+* Users interact via a Telegram bot.
+* The bot extracts intent (e.g. *“đổ xăng - 20k” → Expense → Transport → Fuel*).
+* Transactions are stored in **PostgreSQL** (OLTP).
+* Data is streamed into **ClickHouse** for **analytics & reporting**.
+* The backend is fully **containerized, configurable, and scalable**.
+
+---
+
+## 🛠️ Tech Stack & Skills Demonstrated
+
+### **Backend**
+
+* **FastAPI** – high-performance async API framework
+* **Pydantic V2** – type-safe data validation
+* **Uvicorn** – ASGI server
+
+### **Databases**
+
+* **PostgreSQL** – reliable OLTP storage
+* **ClickHouse** – high-performance OLAP analytics
+* **CDC/Event-driven sync** – data pipeline between OLTP ↔ OLAP
+
+### **AI & NLP**
+
+* **Ollama (self-hosted LLMs)** – natural language parsing
+* **Hybrid intent detection** – regex + LLM fallback
+* **Structured financial categorization**
+
+### **Bot Development**
+
+* **Aiogram** – async Telegram Bot framework
+* **Webhook-based** – real-time message processing
+* **ngrok** – local development tunneling
+
+### **DevOps & Infra**
+
+* **Docker & Docker Compose** – container orchestration
+* **Multi-stage builds** – optimized images
+* **Makefile** – streamlined workflows
+* **Environment-based configuration**
+
+### **Engineering Practices**
+
+* **Clean Architecture** – separation of concerns
+* **Dependency Injection** – modular, testable design
+* **Factory Pattern** – flexible app setup
+* **Validation Layer** – domain logic with Pydantic
+
+---
+
+## 📁 Project Structure
+
+```
+finbot-be/
+├── app/
+│   ├── api/            # API layer
+│   ├── core/           # Settings & app factory
+│   ├── model/          # Data models
+│   ├── repo/           # Repository pattern
+│   └── services/       # Business logic
+├── Docker/             # Container configs
+├── scripts/            # Automation scripts
+└── compose.yaml        # Orchestration
+```
+
+---
+
+## 🔧 Key Features
+
+1. **Intelligent NLP Parsing**
+
+   * Input: `"đổ xăng - 20k"`
+   * Output: `Expense → Transport → Fuel → 20,000 VND`
+   * Hybrid: Regex rules + Ollama-powered LLM
+
+2. **Hybrid Data Architecture**
+
+   * **PostgreSQL (OLTP)** – transactional storage
+   * **ClickHouse (OLAP)** – fast analytics & reports
+
+3. **Containerized Development**
+
+   * `make up` → start full stack (bot, API, DBs, analytics)
+   * Hot-reload & logs available
+
+---
+
+## 📊 Financial Categories
+
+* **Expenses** – Food, Transport, Entertainment, Utilities, Health, Education
+* **Income** – Salary, Investments, Bonus
+* **Loans** – Borrow, Lend, Repayment
+
+---
+
+## 🐳 Quick Start
+
+```bash
+git clone <repository-url>
+cd finbot-be
+
+cp .env.example .env   # Configure env variables
+make up                # Start services
+```
+
+* API → `http://localhost:8000`
+* ClickHouse UI → `http://localhost:8123`
+
+---
+
+## 📈 Skills Highlighted
+
+✅ **Backend Engineering** – FastAPI, PostgreSQL, async APIs
+✅ **Data Engineering** – OLTP → OLAP pipelines with ClickHouse
+✅ **AI/NLP Integration** – Self-hosted LLM (Ollama) for intent detection
+✅ **Bot Development** – Telegram Bot (Aiogram, Webhooks)
+✅ **DevOps** – Docker, Compose, Makefile automation
+✅ **Software Architecture** – Clean Architecture, DI, Factory Pattern
