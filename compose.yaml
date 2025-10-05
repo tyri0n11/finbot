@@ -8,12 +8,31 @@ services:
     volumes:
       - clickhouse_data:/var/lib/clickhouse
     environment:
-      - CLICKHOUSE_DB=${DB}
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB}
       - CLICKHOUSE_USER=${CLICKHOUSE_USER}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
     networks:
       - finbot_network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: finbot-postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - finbot_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   finbot-backend:
     container_name: finbot-backend
@@ -30,15 +49,21 @@ services:
       PYTHONPATH: /app
       CLICKHOUSE_HOST: ${CLICKHOUSE_HOST}
       CLICKHOUSE_PORT: ${CLICKHOUSE_PORT}
-      CLICKHOUSE_DB: ${DB}
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
       CLICKHOUSE_USER: ${CLICKHOUSE_USER}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PROJECT_NAME: ${PROJECT_NAME}
       CORS_ORIGINS: "*"
     env_file:
       - .env
     depends_on:
       - clickhouse
+      - postgres
     networks:
       - finbot_network
 
@@ -63,3 +88,4 @@ networks:
 
 volumes:
   clickhouse_data:
+  postgres_data:
