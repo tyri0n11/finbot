@@ -11,4 +11,5 @@ numpy
 cython
 pydantic_settings
 aiogram
-python-telegram-bot
+psycopg2-binary
+sqlalchemy

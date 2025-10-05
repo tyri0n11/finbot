@@ -1,4 +1,4 @@
-from .webhook_service import WebhookService
-from .telegram_service import TelegramService
+from .webhook import WebhookService
+from .telegram import TelegramService
 
 __all__ = ["WebhookService", "TelegramService"]
