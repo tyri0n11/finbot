@@ -1,11 +1,29 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from core.settings import ClickHouseSettings, ProjectSettings, Settings, TelegramBotSettings, WebHookSettings
+from core.database import Database
+from core.logger import get_logger
 from typing import Set, Union
 import asyncio
 from core.webhook import WebhookManager
 
 SettingType = Union[ProjectSettings, ClickHouseSettings, Settings, TelegramBotSettings, WebHookSettings]
+
+def init_databases():
+    """
+    Initialize databases on application startup
+    """
+    logger = get_logger()
+    logger.info("Initializing databases...")
+    
+    try:
+        db = Database()
+        logger.info("Databases initialized successfully")
+        return db
+    except Exception as e:
+        logger.error(f"Failed to initialize databases: {e}")
+        # Don't raise exception, let the app start and handle errors in health checks
+        return None
 
 def create_application(router: APIRouter, settings: SettingType) -> FastAPI:
     """
@@ -14,6 +32,12 @@ def create_application(router: APIRouter, settings: SettingType) -> FastAPI:
     app = FastAPI(
         title=settings.PROJECT_NAME,
     )
+
+    # Initialize databases on startup
+    @app.on_event("startup")
+    async def startup_event():
+        """Initialize databases when application starts"""
+        init_databases()
 
     app.add_middleware(
         CORSMiddleware,

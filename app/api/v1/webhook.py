@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, HTTPException
-from app.services.webhook import WebhookService
+from services.webhook import WebhookService
 
 webhook_router = APIRouter(prefix="/webhook", tags=["webhook"])
 

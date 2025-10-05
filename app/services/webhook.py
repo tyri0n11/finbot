@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from app.services.telegram import TelegramService
+from services.telegram import TelegramService
 from core.logger import get_logger
 TAG = "Webhook_Service"
 
