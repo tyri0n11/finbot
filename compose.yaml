@@ -70,7 +70,7 @@ services:
 
   ngrok:
     image: ngrok/ngrok:latest
-    platform: linux/arm64
+    platform: linux/amd64
     command: ["http", "finbot-backend:${PORT}"]
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}

@@ -29,3 +29,6 @@ ps:
 build:
 	docker compose -f $(COMPOSE_FILE) build
 
+reset:
+	docker compose -f $(COMPOSE_FILE) down -v
+
