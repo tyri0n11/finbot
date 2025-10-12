@@ -12,6 +12,7 @@ services:
       - CLICKHOUSE_USER=${CLICKHOUSE_USER}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - TZ=Asia/Ho_Chi_Minh
     networks:
       - finbot_network
 
@@ -26,6 +27,8 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Asia/Ho_Chi_Minh
+      POSTGRES_INITDB_ARGS: "--locale=C.UTF-8 --encoding=UTF8"
     networks:
       - finbot_network
     healthcheck:
@@ -59,6 +62,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PROJECT_NAME: ${PROJECT_NAME}
       CORS_ORIGINS: "*"
+      TZ: Asia/Ho_Chi_Minh
     env_file:
       - .env
     depends_on:
@@ -74,6 +78,7 @@ services:
     command: ["http", "finbot-backend:${PORT}"]
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+      TZ: Asia/Ho_Chi_Minh
     depends_on:
       - finbot-backend
     networks:
@@ -95,6 +100,7 @@ services:
     environment:
       - JENKINS_OPTS=--httpPort=8080
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - TZ=Asia/Ho_Chi_Minh
     networks:
       - finbot_network
     restart: unless-stopped
