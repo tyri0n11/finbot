@@ -39,7 +39,7 @@ def is_command(text: str) -> bool:
 
 def is_transaction_message(text: str) -> bool:
     """
-    Check if text contains transaction indicators
+    Check if text contains transaction indicators (expenses and income)
     
     Args:
         text: Text to check
@@ -49,23 +49,41 @@ def is_transaction_message(text: str) -> bool:
     """
     text_lower = text.lower()
     
-    # Vietnamese transaction verbs
-    vietnamese_verbs = [
+    # Vietnamese expense verbs
+    vietnamese_expense_verbs = [
         'mua', 'chi', 'trả', 'mất', 'tốn', 'đi', 'ăn', 'uống', 
         'thuê', 'đóng', 'nạp', 'rút', 'chuyển', 'gửi'
     ]
     
+    # Vietnamese income verbs/keywords
+    vietnamese_income_verbs = [
+        'nhận', 'được', 'thu', 'kiếm', 'bán', 'lương', 'thưởng',
+        'thu nhập', 'tiền lương', 'tiền thưởng', 'tiền bán',
+        'được trả', 'được nhận', 'freelance', 'làm thêm', 'kiếm được'
+    ]
+    
     # English transaction words
-    english_words = [
+    english_expense_words = [
         'spent', 'paid', 'bought', 'purchased', 'cost', 'price'
+    ]
+    
+    english_income_words = [
+        'earned', 'received', 'got', 'salary', 'bonus', 'income',
+        'freelance', 'commission', 'sold', 'revenue'
     ]
     
     # Currency indicators
     has_currency = bool(re.search(r'[\$€£]|\d+(?:\.\d+)?\s*(?:usd|eur|gbp|vnd|đ|tr|m|k)', text_lower))
-    has_vietnamese_verb = any(verb in text_lower for verb in vietnamese_verbs)
-    has_english_word = any(word in text_lower for word in english_words)
+    has_vietnamese_expense_verb = any(verb in text_lower for verb in vietnamese_expense_verbs)
+    has_vietnamese_income_verb = any(verb in text_lower for verb in vietnamese_income_verbs)
+    has_english_expense_word = any(word in text_lower for word in english_expense_words)
+    has_english_income_word = any(word in text_lower for word in english_income_words)
     
-    return has_currency or has_vietnamese_verb or has_english_word
+    return (has_currency or 
+            has_vietnamese_expense_verb or 
+            has_vietnamese_income_verb or 
+            has_english_expense_word or 
+            has_english_income_word)
 
 
 def validate_amount(amount: Any) -> bool:

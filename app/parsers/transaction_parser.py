@@ -4,10 +4,13 @@ Transaction Parser - Specialized parser for financial transactions with Vietname
 
 import re
 from datetime import datetime
-from interfaces.parser import IMessageParser
-from model import ParseResult, MessageType
+from interfaces import IMessageParser, ParseResult, MessageType
 from utils.currency import convert_vnd_amount, extract_amount_from_text
-from utils.text_processing import categorize_vietnamese_item, extract_vietnamese_transaction_parts
+from utils.text_processing import (
+    categorize_vietnamese_item, 
+    extract_vietnamese_transaction_parts,
+    extract_vietnamese_time_reference
+)
 from utils.validation import is_transaction_message
 
 
@@ -67,32 +70,65 @@ class TransactionParser(IMessageParser):
         )
     
     def _parse_vietnamese_transaction(self, message: str) -> dict:
-        """Parse Vietnamese transaction messages"""
-        message_lower = message.lower().strip()
+        """Parse Vietnamese transaction messages with enhanced features"""
         result = {}
         
-        # Extract amount and currency
-        amount, currency = extract_amount_from_text(message)
-        if amount is not None:
-            result['amount'] = amount
-            result['currency'] = currency
-        
-        # Extract description/item using text processing utils
+        # Use the enhanced transaction parts extraction
         transaction_parts = extract_vietnamese_transaction_parts(message)
+        
+        # Extract transaction type (income/expense)
+        if 'type' in transaction_parts:
+            result['transaction_type'] = transaction_parts['type']
+        
+        # Extract verb
+        if 'verb' in transaction_parts:
+            result['verb'] = transaction_parts['verb']
+        
+        # Extract amount and currency
+        if 'amount' in transaction_parts and 'unit' in transaction_parts:
+            amount = transaction_parts['amount']
+            unit = transaction_parts['unit']
+            
+            # Convert VND amounts
+            if unit in ['tr', 'm']:
+                amount = amount * 1_000_000
+            elif unit in ['k']:
+                amount = amount * 1_000
+            
+            result['amount'] = amount
+            result['currency'] = 'VND' if unit in ['tr', 'm', 'k', 'đ', 'vnd'] else unit.upper()
+        else:
+            # Fallback to old method
+            amount, currency = extract_amount_from_text(message)
+            if amount is not None:
+                result['amount'] = amount
+                result['currency'] = currency
+        
+        # Extract description/item
         if 'item' in transaction_parts:
             result['description'] = transaction_parts['item']
-            
-            # Auto-categorize
+        
+        # Extract category
+        if 'category' in transaction_parts:
+            result['category'] = transaction_parts['category']
+        elif 'item' in transaction_parts:
+            # Auto-categorize based on item
             category = categorize_vietnamese_item(transaction_parts['item'])
             if category:
                 result['category'] = category
         
+        # Extract time information
+        if 'time' in transaction_parts:
+            time_info = transaction_parts['time']
+            result['time_reference'] = time_info
+            if 'value' in time_info:
+                result['date'] = time_info['value']
+        
         # Add metadata
         if result:
-            result['date'] = datetime.now().strftime('%Y-%m-%d')
-            result['time'] = datetime.now().strftime('%H:%M')
+            if 'date' not in result:
+                result['date'] = datetime.now().strftime('%Y-%m-%d')
             result['raw_text'] = message
-            result['language'] = 'vietnamese'
         
         return result
     

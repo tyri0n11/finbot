@@ -3,7 +3,7 @@ from core.telegram_bot import TelegramBot
 from core.settings import settings
 from core.logger import get_logger
 from interfaces.service import ITelegramService
-from services.parser_manager import parser_manager_service
+from services.parser import parser_manager_service
 from utils.validation import clean_and_validate_text
 
 TAG = "Telegram_Service"
@@ -60,7 +60,7 @@ class TelegramService(ITelegramService):
             return False
             
         return False
-    
+
     async def _generate_response(self, parsed_data: dict, chat_id: int) -> str:
         """
         Generate response based on parsed message data
@@ -74,97 +74,210 @@ class TelegramService(ITelegramService):
         """
         import json
         
-        # Format the JSON response for better readability in Telegram
         try:
-            # Create a nicely formatted response
-            response_parts = ["🤖 *Parsed Message:*"]
-            
-            # Add message type
             msg_type = parsed_data.get("type", "unknown")
-            response_parts.append(f"📝 *Type:* {msg_type}")
-            
-            # Add original message
-            original = parsed_data.get("original_message", "")
-            if original and len(original) <= 100:  # Limit length for display
-                response_parts.append(f"💬 *Original:* {original}")
-            elif original:
-                response_parts.append(f"💬 *Original:* {original[:100]}...")
-            
-            # Add parsed data
             data = parsed_data.get("data", {})
-            if data:
-                response_parts.append("📊 *Parsed Data:*")
-                
-                # Format the data nicely
-                if msg_type == "transaction":
-                    for key, value in data.items():
-                        if key != "raw_text":  # Skip raw_text as it's redundant
-                            if key == "amount" and "currency" in data:
-                                # Format amount with currency
-                                currency = data.get("currency", "")
-                                response_parts.append(f"   • *{key.title()}:* {value:,.0f} {currency}")
-                            elif key != "currency":  # Don't show currency separately
-                                response_parts.append(f"   • *{key.title()}:* {value}")
-                elif msg_type == "key_value":
-                    for key, value in data.items():
-                        if key in ["amount", "cost", "paid", "price"] and "currency" in data:
-                            # Format monetary values with currency
-                            currency = data.get("currency", "")
-                            if isinstance(value, (int, float)):
-                                response_parts.append(f"   • *{key.title()}:* {value:,.0f} {currency}")
-                            else:
-                                response_parts.append(f"   • *{key.title()}:* {value}")
-                        elif key != "currency":  # Don't show currency separately
-                            response_parts.append(f"   • *{key.title()}:* {value}")
-                elif msg_type == "text":
-                    response_parts.append(f"   • *Content:* {data.get('content', '')}")
-                    response_parts.append(f"   • *Words:* {data.get('word_count', 0)}")
-                    response_parts.append(f"   • *Characters:* {data.get('char_count', 0)}")
-                elif msg_type == "json":
-                    # Pretty print the JSON data
-                    json_str = json.dumps(data, indent=2, ensure_ascii=False)
-                    response_parts.append(f"```\n{json_str}\n```")
-                else:
-                    # Fallback: just show the data as JSON
-                    json_str = json.dumps(data, indent=2, ensure_ascii=False)
-                    response_parts.append(f"```\n{json_str}\n```")
-            
-            # Add timestamp (formatted nicely)
+            original = parsed_data.get("original_message", "")
             timestamp = parsed_data.get("timestamp", "")
-            if timestamp:
-                # Parse and format timestamp
-                try:
-                    from datetime import datetime
-                    dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-                    formatted_time = dt.strftime("%Y-%m-%d %H:%M:%S")
-                    response_parts.append(f"⏰ *Processed:* {formatted_time}")
-                except:
-                    response_parts.append(f"⏰ *Processed:* {timestamp}")
             
-            # Handle errors
+            # Build response with clear visual sections
+            response_parts = []
+            
+            # Header with message type
+            type_emoji = {
+                "transaction": "💳",
+                "key_value": "🔑",
+                "text": "📝",
+                "json": "📋",
+                "unknown": "❓"
+            }
+            emoji = type_emoji.get(msg_type, "📄")
+            response_parts.append(f"{emoji} *{msg_type.upper().replace('_', ' ')} MESSAGE*")
+            response_parts.append("━━━━━━━━━━━━━━━━━━━━")
+            
+            # Original message section (if present)
+            if original:
+                response_parts.append("")
+                response_parts.append("💬 *Message*")
+                if len(original) <= 150:
+                    response_parts.append(f"_{original}_")
+                else:
+                    response_parts.append(f"_{original[:150]}..._")
+            
+            # Main data section
+            if data:
+                response_parts.append("")
+                response_parts.append("📊 *Parsed Information*")
+                response_parts.append("")
+                
+                if msg_type == "transaction":
+                    response_parts.extend(self._format_transaction(data))
+                elif msg_type == "key_value":
+                    response_parts.extend(self._format_key_value(data))
+                elif msg_type == "text":
+                    response_parts.extend(self._format_text(data))
+                elif msg_type == "json":
+                    response_parts.extend(self._format_json(data))
+                else:
+                    response_parts.extend(self._format_generic(data))
+            
+            # Timestamp footer
+            if timestamp:
+                response_parts.append("")
+                response_parts.append("━━━━━━━━━━━━━━━━━━━━")
+                formatted_time = self._format_timestamp(timestamp)
+                response_parts.append(f"⏰ {formatted_time}")
+            
+            # Error handling
             if "error" in parsed_data:
+                response_parts.append("")
+                response_parts.append("━━━━━━━━━━━━━━━━━━━━")
                 response_parts.append(f"❌ *Error:* {parsed_data['error']}")
             
             return "\n".join(response_parts)
             
         except Exception as e:
-            # Fallback to simple JSON dump if formatting fails
             self.logger.error(f"[{TAG}] Error formatting response: {e}")
-            return f"📋 *JSON Response:*\n```\n{json.dumps(parsed_data, indent=2, ensure_ascii=False)}\n```"
-    
-    async def send_message(self, chat_id: int, text: str, mode_html: bool = False) -> Dict[str, Any]:
-        """
-        Send a message to a specific chat
+            return self._format_fallback(parsed_data)
+
+    def _format_transaction(self, data: dict) -> list:
+        """Format transaction data with visual hierarchy"""
+        lines = []
         
-        Args:
-            chat_id: The chat ID to send message to
-            text: The message text to send
-            mode_html: Whether to parse message as HTML
-            
-        Returns:
-            Dict: The response from Telegram API
-        """
-        return await self.bot.send_message(chat_id, text, mode_html)
+        # Amount (most important - show first and larger)
+        if "amount" in data:
+            amount = data["amount"]
+            currency = data.get("currency", "")
+            if isinstance(amount, (int, float)):
+                lines.append(f"💰 *Amount:* `{amount:,.0f} {currency}`")
+            else:
+                lines.append(f"💰 *Amount:* `{amount} {currency}`")
+            lines.append("")
+        
+        # Other transaction details
+        field_icons = {
+            "description": "📝",
+            "category": "🏷️",
+            "date": "📅",
+            "merchant": "🏪",
+            "account": "🏦",
+            "status": "✅"
+        }
+        
+        for key, value in data.items():
+            if key not in ["amount", "currency", "raw_text"]:
+                icon = field_icons.get(key, "▪️")
+                lines.append(f"{icon} *{key.title()}:* {value}")
+        
+        return lines
+
+    def _format_key_value(self, data: dict) -> list:
+        """Format key-value data with smart grouping"""
+        lines = []
+        
+        # Monetary values first
+        monetary_keys = ["amount", "cost", "price", "paid", "total", "subtotal"]
+        currency = data.get("currency", "")
+        
+        for key in monetary_keys:
+            if key in data:
+                value = data[key]
+                if isinstance(value, (int, float)):
+                    lines.append(f"💵 *{key.title()}:* `{value:,.0f} {currency}`")
+                else:
+                    lines.append(f"💵 *{key.title()}:* `{value} {currency}`")
+        
+        if lines:
+            lines.append("")
+        
+        # Other fields
+        for key, value in data.items():
+            if key not in monetary_keys and key not in ["currency", "raw_text"]:
+                # Smart icon selection
+                if "date" in key.lower() or "time" in key.lower():
+                    icon = "📅"
+                elif "name" in key.lower():
+                    icon = "👤"
+                elif "email" in key.lower():
+                    icon = "📧"
+                elif "phone" in key.lower():
+                    icon = "📱"
+                elif "address" in key.lower():
+                    icon = "📍"
+                else:
+                    icon = "▪️"
+                
+                lines.append(f"{icon} *{key.title()}:* {value}")
+        
+        return lines
+
+    def _format_text(self, data: dict) -> list:
+        """Format text data with statistics"""
+        lines = []
+        
+        content = data.get("content", "")
+        if content:
+            # Show preview
+            lines.append("📄 *Content Preview*")
+            if len(content) <= 200:
+                lines.append(f"_{content}_")
+            else:
+                lines.append(f"_{content[:200]}..._")
+            lines.append("")
+        
+        # Statistics in a compact format
+        word_count = data.get("word_count", 0)
+        char_count = data.get("char_count", 0)
+        
+        lines.append("📊 *Statistics*")
+        lines.append(f"▪️ Words: `{word_count}`")
+        lines.append(f"▪️ Characters: `{char_count}`")
+        
+        return lines
+
+    def _format_json(self, data: dict) -> list:
+        """Format JSON data in a code block"""
+        import json
+        lines = []
+        
+        lines.append("```json")
+        json_str = json.dumps(data, indent=2, ensure_ascii=False)
+        lines.append(json_str)
+        lines.append("```")
+        
+        return lines
+
+    def _format_generic(self, data: dict) -> list:
+        """Generic formatter for unknown data types"""
+        lines = []
+        
+        for key, value in data.items():
+            if key != "raw_text":
+                # Format value based on type
+                if isinstance(value, (int, float)):
+                    lines.append(f"▪️ *{key.title()}:* `{value}`")
+                elif isinstance(value, dict):
+                    lines.append(f"▪️ *{key.title()}:*")
+                    import json
+                    lines.append(f"```json\n{json.dumps(value, indent=2, ensure_ascii=False)}\n```")
+                else:
+                    lines.append(f"▪️ *{key.title()}:* {value}")
+        
+        return lines
+
+    def _format_timestamp(self, timestamp: str) -> str:
+        """Format timestamp in a readable way"""
+        try:
+            from datetime import datetime
+            dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            return dt.strftime("%d %b %Y, %H:%M:%S")
+        except:
+            return timestamp
+
+    def _format_fallback(self, parsed_data: dict) -> str:
+        """Fallback formatter if main formatting fails"""
+        import json
+        return f"📋 *Response Data*\n━━━━━━━━━━━━━━━━━━━━\n```json\n{json.dumps(parsed_data, indent=2, ensure_ascii=False)}\n```"
     
     async def handle_callback_query(self, callback_query: Dict[str, Any]) -> bool:
         """

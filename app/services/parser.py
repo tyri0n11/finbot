@@ -3,12 +3,11 @@ Parser Manager Service - Central orchestrator for all message parsers
 """
 
 from typing import List, Dict, Optional
-from interfaces.parser import IMessageParser, IParserManager
-from model import ParseResult, MessageType
+from interfaces import IMessageParser, IParserManager, ParseResult, MessageType
 from parsers import CommandParser, TransactionParser, JSONParser, KeyValueParser, TextParser
 
 
-class ParserManagerService(IParserManager):
+class ParserService(IParserManager):
     """
     Central manager for all message parsers with priority-based selection
     """
@@ -130,4 +129,4 @@ class ParserManagerService(IParserManager):
 
 
 # Create global parser manager instance
-parser_manager_service = ParserManagerService()
+parser_manager_service = ParserService()

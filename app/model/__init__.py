@@ -105,7 +105,6 @@ class Transaction(BaseModel):
     description: Optional[str] = None
     location: Optional[str] = None
     date: Optional[str] = None
-    time: Optional[str] = None
     raw_text: Optional[str] = None
     language: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

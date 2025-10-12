@@ -15,7 +15,8 @@ from .text_processing import (
     extract_key_value_pairs,
     clean_description,
     categorize_vietnamese_item,
-    extract_vietnamese_transaction_parts
+    extract_vietnamese_transaction_parts,
+    extract_vietnamese_time_reference
 )
 
 from .validation import (
@@ -41,6 +42,7 @@ __all__ = [
     'clean_description',
     'categorize_vietnamese_item',
     'extract_vietnamese_transaction_parts',
+    'extract_vietnamese_time_reference',
     
     # Validation
     'is_valid_json',
