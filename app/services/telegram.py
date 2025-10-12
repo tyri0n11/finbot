@@ -5,7 +5,8 @@ from core.logger import get_logger
 from interfaces.service import ITelegramService
 from services.parser import parser_manager_service
 from utils.validation import clean_and_validate_text
-
+from repo.transaction import TransactionRepository
+from datetime import datetime
 TAG = "Telegram_Service"
 
 class TelegramService(ITelegramService):
@@ -17,6 +18,7 @@ class TelegramService(ITelegramService):
         self.logger = get_logger()
         self.bot = TelegramBot(settings.TELEGRAM_BOT_TOKEN)
         self.parser_manager = parser_manager_service
+        self.transaction_repo = TransactionRepository()
     
     async def process_message(self, message: Dict[str, Any]) -> bool:
         """
@@ -35,6 +37,14 @@ class TelegramService(ITelegramService):
             self.logger.info(f"[{TAG}] Processing message from chat {chat_id}: {text}")
 
             if text:
+                # Extract user data from message
+                user_data = {
+                    'username': message.get("from", {}).get("username"),
+                    'first_name': message.get("from", {}).get("first_name"),
+                    'last_name': message.get("from", {}).get("last_name"),
+                    'language_code': message.get("from", {}).get("language_code", 'vi')
+                }
+                
                 # Validate and clean input text
                 try:
                     clean_text = clean_and_validate_text(text)
@@ -43,8 +53,46 @@ class TelegramService(ITelegramService):
                     return False
                 
                 # Parse message using the new parser manager system
+                start_time = datetime.now()
                 parse_result = self.parser_manager.parse_message(clean_text)
+                processing_time = (datetime.now() - start_time).total_seconds() * 1000
+                
                 parsed_json = parse_result.to_dict()
+                
+                # Enhanced transaction data for database
+                if parse_result.message_type.value == 'transaction' and parsed_json.get('data'):
+                    transaction_data = {
+                        **parsed_json['data'],
+                        'chat_id': chat_id,
+                        'user_data': user_data,
+                        'original_message': text,
+                        'parser_name': parse_result.parser_name,
+                        'confidence_score': getattr(parse_result, 'confidence_score', None)
+                    }
+                    
+                    # Save transaction to database
+                    await self.transaction_repo.save_transaction(transaction_data)
+                
+                # Save parser log
+                parser_log_data = {
+                    'original_message': text,
+                    'parser_name': parse_result.parser_name,
+                    'message_type': parse_result.message_type.value,
+                    'parsed_data': parsed_json,
+                    'extracted_verb': parsed_json.get('data', {}).get('verb'),
+                    'extracted_item': parsed_json.get('data', {}).get('item') or parsed_json.get('data', {}).get('description'),
+                    'extracted_amount': parsed_json.get('data', {}).get('amount'),
+                    'extracted_currency': parsed_json.get('data', {}).get('currency'),
+                    'extracted_category': parsed_json.get('data', {}).get('category'),
+                    'extracted_time_info': parsed_json.get('data', {}).get('time'),
+                    'success': len(parse_result.errors) == 0,
+                    'error_message': ', '.join(parse_result.errors) if parse_result.errors else None,
+                    'processing_time_ms': int(processing_time),
+                    'confidence_score': getattr(parse_result, 'confidence_score', None)
+                }
+                
+                await self.transaction_repo.save_parser_log(chat_id, parser_log_data)
+                
                 self.logger.info(f"[{TAG}] Parsed message to JSON: {parsed_json}")
                 
                 # Process the parsed JSON content
@@ -56,7 +104,7 @@ class TelegramService(ITelegramService):
                 return True
                 
         except Exception as e:
-            self.logger.info(f"[{TAG}] Error processing message: {e}")
+            self.logger.error(f"[{TAG}] Error processing message: {e}")
             return False
             
         return False

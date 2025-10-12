@@ -78,7 +78,13 @@ def categorize_vietnamese_item(text: str) -> str:
             'bánh mì', 'phở', 'bún', 'cơm', 'mì', 'bánh', 'cháo', 'xôi', 'nem', 'chả',
             'gỏi', 'canh', 'thịt', 'gà', 'cá', 'tôm', 'cua', 'cà phê', 'trà', 'nước',
             'bia', 'rượu', 'sinh tố', 'nước ngọt', 'coca', 'pepsi', 'juice', 'milk tea',
-            'trà sữa', 'bánh ngọt', 'kẹo', 'snack', 'chocolate', 'kem', 'cafe'
+            'trà sữa', 'bánh ngọt', 'kẹo', 'snack', 'chocolate', 'kem', 'cafe', 'ăn sáng',
+            'breakfast', 'lunch', 'dinner', 'meal', 'food', 'drink', 'restaurant', 'cafe',
+            'ăn trưa', 'ăn tối', 'đồ ăn', 'uống nước', 'ăn vặt', 'snack', 'mỳ quảng', 'bún bò',
+            'hủ tiếu', 'bánh cuốn', 'bánh xèo', 'bánh chưng', 'bánh tét', 'bánh bao', 'bánh giò',
+            'bánh kem', 'bánh quy', 'bánh su', 'bánh bông lan', 'bánh mì chảo', 'bánh mì que', 'bánh mì ốp la',
+            'phở bò', 'phở gà', 'phở cuốn', 'phở xào', 'bún chả', 'bún riêu', 'bún đậu', 'bún mắm',
+            'cơm tấm', 'cơm gà', 'cơm sườn', 'cơm chiên', 'cơm rang', 'cơm niêu', 'cơm văn phòng'
         ],
         'di chuyển': [
             'xe buýt', 'taxi', 'grab', 'uber', 'xăng', 'gửi xe', 'đậu xe', 'vé xe',
@@ -107,10 +113,11 @@ def categorize_vietnamese_item(text: str) -> str:
         ]
     }
     
+    # Collect all matches with their lengths to find the best match
+    matches = []
+    
     for category, keywords in categories.items():
-        # Sort keywords by length (descending) to match longer phrases first
-        sorted_keywords = sorted(keywords, key=len, reverse=True)
-        for keyword in sorted_keywords:
+        for keyword in keywords:
             # Split keyword into words and create pattern for whole word matching
             words = keyword.lower().split()
             if len(words) == 1:
@@ -122,7 +129,13 @@ def categorize_vietnamese_item(text: str) -> str:
                 pattern = r'\s+'.join(word_patterns)
             
             if re.search(pattern, text_lower):
-                return category
+                matches.append((category, keyword, len(keyword)))
+    
+    # Return the category with the longest matching keyword
+    if matches:
+        # Sort by keyword length (descending) and return the first one
+        matches.sort(key=lambda x: x[2], reverse=True)
+        return matches[0][0]
     
     return None
 
@@ -305,9 +318,10 @@ def extract_vietnamese_transaction_parts(message: str) -> Dict[str, str]:
     
     # Extract item/description using enhanced patterns
     desc_patterns = [
-        # Expense patterns
+        # Expense patterns - include verb in capture for food-related activities
+        r'(ăn\s+[^0-9]+?)\s+\d+(?:\.\d+)?(?:tr|m|k|đ|vnd)',  # "ăn sáng", "ăn tối"
+        r'(uống\s+[^0-9]+?)\s+\d+(?:\.\d+)?(?:tr|m|k|đ|vnd)', # "uống cà phê"
         r'(?:mua|chi|trả|tốn|đi)\s+([^0-9]+?)\s+\d+(?:\.\d+)?(?:tr|m|k|đ|vnd)',
-        r'(?:ăn|uống)\s+([^0-9]+?)\s+\d+(?:\.\d+)?(?:tr|m|k|đ|vnd)',
         # Income patterns
         r'(?:nhận|được|thu|kiếm|bán)\s+([^0-9]+?)\s+\d+(?:\.\d+)?(?:tr|m|k|đ|vnd)',
         r'(?:lương|thưởng)\s+([^0-9]*?)\s+\d+(?:\.\d+)?(?:tr|m|k|đ|vnd)',
