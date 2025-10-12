@@ -108,7 +108,9 @@ def categorize_vietnamese_item(text: str) -> str:
     }
     
     for category, keywords in categories.items():
-        for keyword in keywords:
+        # Sort keywords by length (descending) to match longer phrases first
+        sorted_keywords = sorted(keywords, key=len, reverse=True)
+        for keyword in sorted_keywords:
             # Split keyword into words and create pattern for whole word matching
             words = keyword.lower().split()
             if len(words) == 1:
