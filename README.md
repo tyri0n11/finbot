@@ -1,13 +1,3 @@
-Mình sẽ viết lại README theo hướng **gọn gàng, súc tích, chuyên nghiệp**, nhấn mạnh điểm mạnh của bạn để khi đọc vào là thấy ngay bạn có **backend skill + data skill + AI/LLM integration**.
-
----
-
-# AI-powered Expense Management System with Hybrid OLTP/OLAP Architecture
-
-A modern **Financial Management Bot Backend** that helps users track expenses, income, and loans through a conversational **Telegram bot**.
-The system combines **OLTP (PostgreSQL)** for reliable transactions, **OLAP (ClickHouse)** for analytics, and **self-hosted LLM (Ollama)** for intelligent NLP-based task parsing.
-
----
 
 ## 🚀 Project Overview
 
