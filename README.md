@@ -111,13 +111,3 @@ make up                # Start services
 * API → `http://localhost:8000`
 * ClickHouse UI → `http://localhost:8123`
 
----
-
-## 📈 Skills Highlighted
-
-✅ **Backend Engineering** – FastAPI, PostgreSQL, async APIs
-✅ **Data Engineering** – OLTP → OLAP pipelines with ClickHouse
-✅ **AI/NLP Integration** – Self-hosted LLM (Ollama) for intent detection
-✅ **Bot Development** – Telegram Bot (Aiogram, Webhooks)
-✅ **DevOps** – Docker, Compose, Makefile automation
-✅ **Software Architecture** – Clean Architecture, DI, Factory Pattern
