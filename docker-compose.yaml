@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: finbot-postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - finbot_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  finbot-backend:
+    container_name: finbot-backend
+    build:
+      context: .
+      dockerfile: Docker/Dockerfile-backend.Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port ${PORT} --reload --log-level info
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    environment:
+      PYTHONPATH: /app
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PROJECT_NAME: ${PROJECT_NAME}
+      CORS_ORIGINS: "*"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - finbot_network
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    platform: linux/amd64
+    command: ["http", "finbot-backend:${PORT}"]
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    depends_on:
+      - finbot-backend
+    networks:
+      - finbot_network
+    ports:
+      - "4040:4040"
+
+networks:
+  finbot_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

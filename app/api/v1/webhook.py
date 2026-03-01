@@ -14,7 +14,7 @@ async def telegram_webhook(request: Request):
     try:
         update_data = await request.json()
 
-        if not webhook_service.validate_update(update_data):
+        if not await webhook_service.validate_update(update_data):
             raise HTTPException(status_code=400, detail="Invalid update data")
         await webhook_service.process_update(update_data)
 

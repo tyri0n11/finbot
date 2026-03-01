@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirement.txt
+
+      - name: Run tests
+        env:
+          PYTHONPATH: app
+          # Dummy values so pydantic_settings is satisfied
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: test_db
+          TELEGRAM_BOT_TOKEN: test_token
+          NGROK_API: http://localhost:4040/api/tunnels
+          PROJECT_NAME: finbot
+          OPENWEATHER_API_KEY: ""
+          NEWS_API_KEY: ""
+          WEATHER_CITY: Ho Chi Minh City
+          TIMEZONE: Asia/Ho_Chi_Minh
+        run: pytest tests/ -v --tb=short
