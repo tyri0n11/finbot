@@ -13,8 +13,6 @@ format:
 
 up:
 	docker compose -f $(COMPOSE_FILE) up -d --build
-	@sleep 5
-	@./scripts/set_webhook.sh
 down:
 	docker compose -f $(COMPOSE_FILE) down
 
