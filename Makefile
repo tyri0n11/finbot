@@ -1,7 +1,7 @@
 FORMAT = black . --exclude '(storage|migrations)'
 
 # Default compose file (basic setup)
-COMPOSE_FILE := compose.yaml
+COMPOSE_FILE := docker-compose.yaml
 
 
 # ===========================================
