@@ -41,3 +41,39 @@ jobs:
           WEATHER_CITY: Ho Chi Minh City
           TIMEZONE: Asia/Ho_Chi_Minh
         run: pytest tests/ -v --tb=short
+
+  deploy:
+    runs-on: finbot
+    needs: test
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy .env if not exists
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          fi
+
+      - name: Build and restart containers
+        run: |
+          docker compose -f docker-compose.yaml up -d --build --remove-orphans
+
+      - name: Wait for backend to be healthy
+        run: |
+          echo "Waiting for backend..."
+          for i in $(seq 1 15); do
+            if curl -sf http://localhost:8000/api/v1/health > /dev/null; then
+              echo "Backend is up!"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Backend did not start in time"
+          docker logs finbot-backend --tail 30
+          exit 1
+
+      - name: Deploy success
+        run: echo "Deploy to develop complete ✓"
